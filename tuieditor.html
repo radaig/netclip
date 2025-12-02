@@ -1,0 +1,1215 @@
+<head>
+<link href="/static/toastui-editor.min.css" rel="stylesheet">
+<script src="/static/toastui-editor-all.min.js"></script>
+<script src="/static/socket.io.min.js"></script>
+<style>
+	.upload-indicator {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		background: #2196F3;
+		color: white;
+		padding: 12px 24px;
+		border-radius: 4px;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+		z-index: 9999;
+		display: none;
+	}
+	.upload-indicator.show {
+		display: block;
+	}
+	.upload-indicator.error {
+		background: #f44336;
+	}
+
+	.container {
+		display: flex;
+		height: 100vh;
+	}
+	.editor-wrapper {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	.editor-container {
+		flex: 1;
+	}
+	.sidebar {
+		width: 250px;
+		background: #f5f5f5;
+		border-left: 1px solid #ddd;
+		padding: 20px;
+		overflow-y: auto;
+	}
+	.sidebar h3 {
+		margin-top: 0;
+		margin-bottom: 15px;
+		font-size: 16px;
+		color: #333;
+	}
+	.user-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.user-item {
+		padding: 8px 12px;
+		margin-bottom: 5px;
+		background: white;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+	}
+	.user-item.online::before {
+		content: '●';
+		color: #4CAF50;
+		margin-right: 8px;
+	}
+	.room-info {
+		background: white;
+		padding: 12px;
+		border-radius: 4px;
+		margin-bottom: 20px;
+	}
+	.room-id {
+		font-family: monospace;
+		background: #f0f0f0;
+		padding: 4px 8px;
+		border-radius: 3px;
+	}
+	.room-link {
+		color: #2196F3;
+		text-decoration: none;
+		word-break: break-all;
+	}
+	.room-link:hover {
+		text-decoration: underline;
+	}
+	.status {
+		color: #666;
+		font-size: 12px;
+		margin-top: 5px;
+	}
+
+	.password-modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: none;
+		justify-content: center;
+		align-items: center;
+		z-index: 10000;
+	}
+	.password-modal.show {
+		display: flex;
+	}
+	.password-box {
+		background: white;
+		padding: 30px;
+		border-radius: 8px;
+		max-width: 400px;
+		width: 90%;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	}
+	.password-box h3 {
+		margin-top: 0;
+		margin-bottom: 20px;
+		color: #333;
+	}
+	.password-box input[type="password"] {
+		width: 100%;
+		padding: 10px;
+		font-size: 16px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		margin-bottom: 15px;
+		box-sizing: border-box;
+	}
+	.password-box button {
+		width: 100%;
+		padding: 12px;
+		background: #2196F3;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+		cursor: pointer;
+	}
+	.password-box button:hover {
+		background: #1976D2;
+	}
+	.password-box .error {
+		color: #f44336;
+		margin-bottom: 10px;
+		display: none;
+	}
+	.room-type {
+		font-size: 13px;
+		color: #4CAF50;
+		margin-top: 8px;
+	}
+	.room-type.private {
+		color: #FF9800;
+	}
+
+	/* 文件共享样式 */
+	.file-section {
+		margin-top: 20px;
+		border-top: 1px solid #ddd;
+		padding-top: 20px;
+	}
+	.file-section h3 {
+		margin-top: 0;
+		margin-bottom: 15px;
+		font-size: 16px;
+		color: #333;
+	}
+	.room-controls {
+		background: white;
+		padding: 12px;
+		border-radius: 4px;
+		margin-bottom: 20px;
+	}
+	.room-controls input[type="text"] {
+		width: 100%;
+		padding: 8px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 14px;
+		margin-bottom: 8px;
+		box-sizing: border-box;
+	}
+	.room-controls button {
+		width: 100%;
+		padding: 8px;
+		background: #4CAF50;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		font-size: 14px;
+		cursor: pointer;
+		margin-top: 5px;
+	}
+	.room-controls button:hover {
+		background: #45a049;
+	}
+	.upload-section {
+		background: white;
+		padding: 12px;
+		border-radius: 4px;
+		margin-bottom: 15px;
+	}
+	.upload-btn {
+		width: 100%;
+		padding: 10px;
+		background: #2196F3;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		margin-bottom: 10px;
+	}
+	.upload-btn:hover {
+		background: #1976D2;
+	}
+	.progress-bar {
+		width: 100%;
+		height: 20px;
+		background: #f0f0f0;
+		border-radius: 10px;
+		overflow: hidden;
+		margin-bottom: 5px;
+		display: none;
+	}
+	.progress-fill {
+		height: 100%;
+		background: #4CAF50;
+		width: 0%;
+		transition: width 0.3s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-size: 12px;
+	}
+	.progress-text {
+		font-size: 12px;
+		color: #666;
+		text-align: center;
+		margin-bottom: 5px;
+		display: none;
+	}
+	.file-list {
+		max-height: 300px;
+		overflow-y: auto;
+	}
+	.file-item {
+		background: #f9f9f9;
+		padding: 10px;
+		border-radius: 4px;
+		margin-bottom: 8px;
+		font-size: 13px;
+	}
+	.file-name {
+		font-weight: bold;
+		margin-bottom: 4px;
+		word-break: break-all;
+	}
+	.file-meta {
+		color: #666;
+		font-size: 11px;
+		margin-bottom: 4px;
+	}
+	.file-actions {
+		display: flex;
+		gap: 5px;
+	}
+	.file-actions button {
+		padding: 4px 8px;
+		font-size: 11px;
+		border: none;
+		border-radius: 3px;
+		cursor: pointer;
+	}
+	.file-download {
+		background: #4CAF50;
+		color: white;
+	}
+	.file-delete {
+		background: #f44336;
+		color: white;
+	}
+
+	/* 响应式设计 - 移动设备适配 */
+	/* 通过长宽比检测手机竖屏：高度 > 宽度 且 比例 > 1.5 */
+	@media (max-width: 768px) and (orientation: portrait),
+		   (max-aspect-ratio: 3/4) {
+		.container {
+			flex-direction: column;
+			height: 100vh;
+		}
+
+		.editor-wrapper {
+			flex: 1;
+			min-height: 50vh;
+		}
+
+		.sidebar {
+			width: 100%;
+			border-left: none;
+			border-top: 1px solid #ddd;
+			padding: 15px;
+			max-height: 50vh;
+			overflow-y: auto;
+		}
+
+		.sidebar h3 {
+			font-size: 14px;
+			margin-bottom: 10px;
+		}
+
+		.room-controls input,
+		.file-section input[type="file"] + button {
+			font-size: 14px;
+			padding: 8px;
+		}
+
+		button {
+			padding: 8px 12px;
+			font-size: 14px;
+		}
+
+		.user-item,
+		.file-item {
+			padding: 6px 10px;
+			font-size: 13px;
+		}
+
+		.room-info {
+			padding: 10px;
+			font-size: 13px;
+		}
+
+		.upload-section button {
+			width: 100%;
+			margin-bottom: 10px;
+		}
+
+		.progress-bar {
+			width: 100%;
+		}
+	}
+
+	/* 更小屏幕适配 */
+	@media (max-width: 480px) and (orientation: portrait) {
+		.sidebar {
+			padding: 10px;
+		}
+
+		.room-controls {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.room-controls input {
+			width: 100%;
+		}
+
+		.sidebar h3 {
+			font-size: 13px;
+		}
+
+		.user-item,
+		.file-item,
+		.room-info {
+			font-size: 12px;
+		}
+	}
+
+	/* 横屏手机适配：保持水平布局 */
+	@media (max-width: 768px) and (orientation: landscape) {
+		.container {
+			flex-direction: row;
+			height: 100vh;
+		}
+
+		.editor-wrapper {
+			flex: 1;
+		}
+
+		.sidebar {
+			width: 200px;
+			border-left: 1px solid #ddd;
+			border-top: none;
+			max-height: 100vh;
+		}
+	}
+</style>
+</head>
+<body>
+	<div class="upload-indicator" id="uploadIndicator">上传中...</div>
+	<div class="password-modal" id="passwordModal">
+		<div class="password-box">
+			<h3 id="passwordModalTitle">房间密码</h3>
+			<div class="error" id="passwordError">密码错误，请重试</div>
+			<input type="password" id="passwordInput" placeholder="请输入房间密码" onkeypress="if(event.key==='Enter') submitPassword()" />
+			<button onclick="submitPassword()">确定</button>
+		</div>
+	</div>
+	<div class="container" id="mainContainer" style="display: none;">
+		<div class="editor-wrapper">
+			<div id="editor" class="editor-container"></div>
+		</div>
+		<div class="sidebar">
+			<h3>协作编辑</h3>
+
+			<!-- 房间控制 -->
+			<div class="room-controls">
+				<input type="text" id="roomIdInput" placeholder="输入房间ID" />
+				<input type="text" id="roomPasswordInput" placeholder="密码（公开房间可选）" />
+				<button onclick="createOrJoinRoom()">创建/加入房间</button>
+			</div>
+
+			<div class="room-info">
+				<div><strong>当前房间:</strong> <span class="room-id" id="roomIdDisplay">-</span></div>
+				<div class="room-type" id="roomType">公开房间</div>
+				<div class="status" id="connectionStatus">连接中...</div>
+			</div>
+
+			<h3>在线用户 (<span id="userCount">0</span>)</h3>
+			<ul class="user-list" id="userList"></ul>
+
+			<!-- 文件共享区域 -->
+			<div class="file-section">
+				<h3>📁 文件共享</h3>
+
+				<div class="upload-section">
+					<input type="file" id="fileInput" style="display: none;" onchange="uploadFile()" />
+					<button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+						上传文件
+					</button>
+					<div class="progress-bar" id="progressBar">
+						<div class="progress-fill" id="progressFill">0%</div>
+					</div>
+					<div class="progress-text" id="progressText"></div>
+				</div>
+
+				<div class="file-list" id="fileList">
+					<!-- 文件列表将动态加载 -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		// 全局变量
+		var roomId, username, sessionId, currentPassword;
+		var socket;
+		var isApplyingRemoteUpdate = false;
+		var editorInstance;
+
+		// 生成友好用户名
+		function generateNiceUsername() {
+			var adjectives = ['帅气', '美丽', '聪明', '可爱', '幽默', '温柔', '阳光', '优雅', '活泼', '冷静'];
+			var nouns = ['小红', '小明', '小猫', '小狗', '小鸟', '小兔子', '小熊猫', '小狐狸', '小鹿', '小象'];
+			var adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+			var noun = nouns[Math.floor(Math.random() * nouns.length)];
+			return adjective + '的' + noun;
+		}
+
+		// 获取或创建会话ID
+		function getOrCreateSessionId() {
+			var sessionId = localStorage.getItem('collab_session_id');
+			if (!sessionId) {
+				sessionId = 'sess_' + Math.random().toString(36).substr(2, 16);
+				localStorage.setItem('collab_session_id', sessionId);
+			}
+			return sessionId;
+		}
+
+		// 从路径获取房间ID
+		function getRoomIdFromPath() {
+			var path = window.location.pathname;
+			var parts = path.split('/');
+			if (parts.length > 1 && parts[1] && parts[1].length > 0 && parts[1] !== 'tuieditor.html') {
+				return parts[1];
+			}
+			var params = new URLSearchParams(window.location.search);
+			var password = params.get('password');
+			if (password) {
+				currentPassword = password;
+			}
+			return params.get('room') || 'public';
+		}
+
+		// 文件共享功能需要的全局函数
+		function createOrJoinRoom() {
+			var newRoomId = document.getElementById('roomIdInput').value.trim();
+			var password = document.getElementById('roomPasswordInput').value;
+
+			if (!newRoomId) {
+				alert('请输入房间ID');
+				return;
+			}
+
+			if (newRoomId === roomId) {
+				alert('已经在当前房间');
+				return;
+			}
+
+			// 先检查房间是否存在
+			fetch('/api/room/verify', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					room_id: newRoomId,
+					password: '',
+					session_id: sessionId
+				})
+			})
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(data) {
+				if (data.verified) {
+					// 房间存在，直接跳转
+					if (password) {
+						window.location.href = '/' + newRoomId + '?password=' + encodeURIComponent(password);
+					} else {
+						window.location.href = '/' + newRoomId;
+					}
+				} else {
+					// 房间不存在，创建新房间
+					createNewRoom(newRoomId, password);
+				}
+			})
+			.catch(function(error) {
+				console.error('检查房间失败:', error);
+				// 出错时默认创建新房间
+				createNewRoom(newRoomId, password);
+			});
+		}
+
+		function createNewRoom(roomId, password) {
+			fetch('/api/room/create', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					room_id: roomId,
+					password: password || ''
+				})
+			})
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(data) {
+				if (data.room_id) {
+					alert('房间创建成功！');
+					// 保存密码到本地
+					if (password) {
+						var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
+						savedPasswords[data.room_id] = password;
+						localStorage.setItem('collab_passwords', JSON.stringify(savedPasswords));
+					}
+					// 跳转到新房间
+					if (password) {
+						window.location.href = '/' + data.room_id + '?password=' + encodeURIComponent(password);
+					} else {
+						window.location.href = '/' + data.room_id;
+					}
+				} else {
+					alert('房间创建失败: ' + (data.error || '未知错误'));
+				}
+			})
+			.catch(function(error) {
+				console.error('创建房间失败:', error);
+				alert('创建房间失败: ' + error.message);
+			});
+		}
+
+		function uploadFile() {
+			var fileInput = document.getElementById('fileInput');
+			var file = fileInput.files[0];
+
+			if (!file) return;
+
+			// 允许的文件类型 - 扩展名和MIME类型双重验证
+			var allowedTypes = {
+				// 图片
+				'jpg': 'image/jpeg',
+				'jpeg': 'image/jpeg',
+				'png': 'image/png',
+				'gif': 'image/gif',
+				'webp': 'image/webp',
+				'svg': 'image/svg+xml',
+				// 文档
+				'txt': 'text/plain',
+				'md': 'text/markdown',
+				'pdf': 'application/pdf',
+				'doc': 'application/msword',
+				'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+				'xls': 'application/vnd.ms-excel',
+				'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				'ppt': 'application/vnd.ms-powerpoint',
+				'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+				// 压缩文件
+				'zip': 'application/zip',
+				'rar': 'application/x-rar-compressed',
+				'7z': 'application/x-7z-compressed',
+				// 代码文件
+				'js': 'text/javascript',
+				'json': 'application/json',
+				'html': 'text/html',
+				'htm': 'text/html',
+				'css': 'text/css',
+				'xml': 'text/xml',
+				'py': 'text/x-python',
+				'java': 'text/x-java-source',
+				// 音频文件
+				'mp3': 'audio/mpeg',
+				'wav': 'audio/wav',
+				'ogg': 'audio/ogg',
+				// 视频文件
+				'mp4': 'video/mp4',
+				'avi': 'video/x-msvideo',
+				'mov': 'video/quicktime',
+				'wmv': 'video/x-ms-wmv'
+			};
+
+			var fileName = file.name;
+			var fileExtension = fileName.split('.').pop().toLowerCase();
+			var fileMimeType = file.type;
+
+			// 检查文件扩展名
+			if (!allowedTypes.hasOwnProperty(fileExtension)) {
+				alert('不支持的文件扩展名！\n\n允许的类型：\n• 图片：JPG, PNG, GIF, WebP, SVG\n• 文档：PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, MD\n• 压缩：ZIP, RAR, 7Z\n• 代码：JS, JSON, HTML, CSS, XML, PY, JAVA\n• 音频：MP3, WAV, OGG\n• 视频：MP4, AVI, MOV, WMV');
+				return;
+			}
+
+			// 验证MIME类型（防止伪造）
+			var expectedMimeType = allowedTypes[fileExtension];
+			if (fileMimeType && fileMimeType !== expectedMimeType) {
+				alert('文件MIME类型不匹配！请确保文件未损坏。');
+				return;
+			}
+
+			// 检查文件大小（根据类型不同限制不同）
+			var maxSize = 50 * 1024 * 1024; // 50MB 默认
+			var largeFileTypes = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z', 'mp4', 'avi', 'mov', 'wmv'];
+			if (largeFileTypes.indexOf(fileExtension) !== -1) {
+				maxSize = 100 * 1024 * 1024; // 100MB for large files
+			}
+			var imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+			if (imageTypes.indexOf(fileExtension) !== -1) {
+				maxSize = 10 * 1024 * 1024; // 10MB for images
+			}
+
+			if (file.size > maxSize) {
+				alert('文件大小超出限制！允许的最大大小：' + (maxSize / 1024 / 1024).toFixed(0) + 'MB');
+				return;
+			}
+
+			// 检查文件名安全性
+			if (fileName.includes('..') || fileName.includes('/') || fileName.includes('\\') ||
+				fileName.includes(':') || fileName.includes('*') || fileName.includes('?') ||
+				fileName.includes('"') || fileName.includes('<') || fileName.includes('>') ||
+				fileName.includes('|') || fileName.includes('~') || fileName.includes('$')) {
+				alert('文件名包含非法字符！');
+				return;
+			}
+
+			// 检查文件名长度
+			if (fileName.length > 100) {
+				alert('文件名长度不能超过100个字符！');
+				return;
+			}
+
+			var formData = new FormData();
+			formData.append('file', file);
+
+			var progressBar = document.getElementById('progressBar');
+			var progressFill = document.getElementById('progressFill');
+			var progressText = document.getElementById('progressText');
+
+			progressBar.style.display = 'block';
+			progressText.style.display = 'block';
+			progressFill.style.width = '0%';
+
+			var xhr = new XMLHttpRequest();
+
+			xhr.upload.addEventListener('progress', function(e) {
+				if (e.lengthComputable) {
+					var percent = Math.round((e.loaded / e.total) * 100);
+					progressFill.style.width = percent + '%';
+					progressFill.textContent = percent + '%';
+					progressText.textContent = '上传中: ' + formatFileSize(e.loaded) + ' / ' + formatFileSize(e.total);
+				}
+			});
+
+			xhr.addEventListener('load', function() {
+				if (xhr.status === 200) {
+					var response = JSON.parse(xhr.responseText);
+					if (response.success) {
+						alert('文件上传成功！');
+						loadRoomFiles();
+						fileInput.value = '';
+					} else {
+						alert('上传失败: ' + (response.error || '未知错误'));
+					}
+				} else {
+					alert('上传失败，请重试');
+				}
+				progressBar.style.display = 'none';
+				progressText.style.display = 'none';
+			});
+
+			xhr.addEventListener('error', function() {
+				alert('上传失败，请检查网络连接');
+				progressBar.style.display = 'none';
+				progressText.style.display = 'none';
+			});
+
+			xhr.open('POST', '/api/room/' + roomId + '/upload');
+			xhr.send(formData);
+		}
+
+		function downloadFile(fileId) {
+			window.location.href = '/api/room/' + roomId + '/download/' + fileId;
+		}
+
+		function deleteFile(fileId) {
+			if (!confirm('确定要删除这个文件吗？')) {
+				return;
+			}
+
+			fetch('/api/room/' + roomId + '/delete/' + fileId, {
+				method: 'DELETE'
+			})
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(data) {
+				if (data.success) {
+					alert('文件删除成功');
+					loadRoomFiles();
+				} else {
+					alert('删除失败: ' + (data.error || '未知错误'));
+				}
+			})
+			.catch(function(error) {
+				console.error('删除文件失败:', error);
+				alert('删除失败，请重试');
+			});
+		}
+
+		function formatFileSize(bytes) {
+			if (bytes === 0) return '0 Bytes';
+			var k = 1024;
+			var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+			var i = Math.floor(Math.log(bytes) / Math.log(k));
+			return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+		}
+
+		function escapeHtml(text) {
+			var div = document.createElement('div');
+			div.textContent = text;
+			return div.innerHTML;
+		}
+
+		document.addEventListener("DOMContentLoaded", function() {
+			var editorElement = document.getElementById('editor');
+			var uploadIndicator = document.getElementById('uploadIndicator');
+			var roomIdDisplay = document.getElementById('roomIdDisplay');
+			var connectionStatus = document.getElementById('connectionStatus');
+			var userCount = document.getElementById('userCount');
+			var userList = document.getElementById('userList');
+			var passwordModal = document.getElementById('passwordModal');
+			var passwordInput = document.getElementById('passwordInput');
+			var passwordError = document.getElementById('passwordError');
+			var passwordModalTitle = document.getElementById('passwordModalTitle');
+			var roomType = document.getElementById('roomType');
+			var mainContainer = document.getElementById('mainContainer');
+
+			// 初始化全局变量
+			username = generateNiceUsername();
+			roomId = getRoomIdFromPath();
+			sessionId = getOrCreateSessionId();
+
+			function showPasswordModal(title) {
+				passwordModalTitle.textContent = title || '房间密码';
+				passwordError.style.display = 'none';
+				passwordInput.value = '';
+				passwordModal.classList.add('show');
+				passwordInput.focus();
+			}
+
+			function hidePasswordModal() {
+				passwordModal.classList.remove('show');
+			}
+
+			function checkRoomPassword() {
+				if (roomId === 'public') {
+					// 默认公开房间不需要密码
+					mainContainer.style.display = 'flex';
+					initApp();
+					return;
+				}
+
+				// 如果URL中提供了密码，直接验证
+				if (currentPassword) {
+					verifyPassword(currentPassword);
+					return;
+				}
+
+				// 检查房间是否存在及类型
+				fetch('/api/room/verify', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						room_id: roomId,
+						password: '',
+						session_id: sessionId
+					})
+				})
+				.then(function(response) {
+					return response.json();
+				})
+				.then(function(data) {
+					if (!data.exists) {
+						// 房间不存在，跳转到public房间
+						alert('房间 "' + roomId + '" 不存在！即将跳转到公开房间...');
+						window.location.href = '/public';
+						return;
+					}
+
+					if (data.verified && data.is_public) {
+						// 公开房间，无需密码，直接进入
+						mainContainer.style.display = 'flex';
+						initApp();
+					} else if (data.verified && !data.is_public) {
+						// 私密房间，检查本地密码
+						var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
+						if (savedPasswords[roomId]) {
+							currentPassword = savedPasswords[roomId];
+							verifyPassword(currentPassword);
+						} else {
+							// 房间存在但需要密码
+							showPasswordModal('请输入房间密码');
+						}
+					} else if (!data.verified && data.exists) {
+						// 房间存在但密码错误
+						alert('密码错误！');
+						showPasswordModal('请输入房间密码');
+					}
+				})
+				.catch(function(error) {
+					console.error('检查房间失败:', error);
+					// 错误情况下跳转到public房间
+					alert('房间 "' + roomId + '" 不存在！即将跳转到公开房间...');
+					window.location.href = '/public';
+				});
+			}
+
+			function verifyPassword(password) {
+				fetch('/api/room/verify', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						room_id: roomId,
+						password: password,
+						session_id: sessionId
+					})
+				})
+				.then(function(response) {
+					return response.json();
+				})
+				.then(function(data) {
+					if (data.verified) {
+						// 密码正确
+						currentPassword = password;
+						hidePasswordModal();
+						mainContainer.style.display = 'flex';
+						initApp();
+
+						// 保存密码到本地
+						if (password) {
+							var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
+							savedPasswords[roomId] = password;
+							localStorage.setItem('collab_passwords', JSON.stringify(savedPasswords));
+						}
+					} else {
+						// 密码错误
+						passwordError.textContent = data.message || '密码错误，请重试';
+						passwordError.style.display = 'block';
+						passwordInput.focus();
+					}
+				})
+				.catch(function(error) {
+					console.error('验证密码失败:', error);
+					passwordError.textContent = '验证失败，请重试';
+					passwordError.style.display = 'block';
+				});
+			}
+
+			window.submitPassword = function() {
+				var password = passwordInput.value;
+				if (roomId === 'public') {
+					// public房间不需要密码，直接进入
+					hidePasswordModal();
+					mainContainer.style.display = 'flex';
+					initApp();
+				} else if (roomId === 'default' || password) {
+					verifyPassword(password);
+				} else {
+					// 创建新房间
+					createRoom(password);
+				}
+			};
+
+			function createRoom(password) {
+				fetch('/api/room/create', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ password: password })
+				})
+				.then(function(response) {
+					return response.json();
+				})
+				.then(function(data) {
+					if (data.room_id) {
+						currentPassword = password;
+						hidePasswordModal();
+						mainContainer.style.display = 'flex';
+						initApp();
+
+						// 保存密码到本地
+						if (password) {
+							var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
+							savedPasswords[data.room_id] = password;
+							localStorage.setItem('collab_passwords', JSON.stringify(savedPasswords));
+						}
+
+						// 更新URL
+						window.history.replaceState({}, '', '/' + data.room_id);
+					}
+				})
+				.catch(function(error) {
+					console.error('创建房间失败:', error);
+				});
+			}
+
+			function showUploadIndicator(message, isError) {
+				uploadIndicator.textContent = message;
+				uploadIndicator.className = 'upload-indicator show' + (isError ? ' error' : '');
+				setTimeout(function() {
+					uploadIndicator.className = 'upload-indicator';
+				}, 3000);
+			}
+
+			function updateUserList(users) {
+				userCount.textContent = users.length;
+				userList.innerHTML = '';
+				users.forEach(function(user) {
+					var li = document.createElement('li');
+					li.className = 'user-item online';
+					li.textContent = user;
+					userList.appendChild(li);
+				});
+			}
+
+			function updateRoomInfo(isPublic) {
+				roomIdDisplay.textContent = roomId;
+				if (isPublic) {
+					roomType.textContent = '公开房间';
+					roomType.className = 'room-type';
+				} else {
+					roomType.textContent = '私密房间（需密码）';
+					roomType.className = 'room-type private';
+				}
+				if (roomId !== 'public') {
+					var link = window.location.origin + '/' + roomId;
+					var linkElement = document.createElement('div');
+					linkElement.innerHTML = '<strong>分享链接:</strong><br><a href="' + link + '" class="room-link" target="_blank">' + link + '</a>';
+					var roomInfoDiv = document.querySelector('.room-info');
+					// 移除旧链接
+					var existingLink = roomInfoDiv.querySelector('.room-link');
+					if (existingLink) {
+						existingLink.parentElement.remove();
+					}
+					roomInfoDiv.appendChild(linkElement);
+				}
+			}
+
+			function initApp() {
+				// 初始化编辑器
+				var editorInstance = new toastui.Editor({
+					el: editorElement,
+					height: '100%',
+					hooks: {
+					addImageBlobHook: function(file, successCallback, errorCallback){
+						console.log('Image upload triggered:', file.name, file.type);
+
+						// 显示上传指示器
+						showUploadIndicator('正在上传图片...', false);
+
+						// 将文件数据上传至服务器
+						var formData = new FormData();
+						formData.append('image', file);
+
+						// 使用相对路径，自动适配当前域名
+						fetch('/upload-image', {
+							method: 'POST',
+							body: formData
+						}).then(function(response){
+							response.json().then(function(data){
+								if (data && data.url) {
+									console.log('Image uploaded successfully:', data.url);
+									showUploadIndicator('上传成功！', false);
+									// 返回完整URL给编辑器
+									var fullUrl = window.location.origin + data.url;
+									successCallback(fullUrl);
+								} else {
+									console.error('Upload failed:', data);
+									showUploadIndicator('上传失败！', true);
+									errorCallback('Failed uploading image');
+								}
+							}).catch(function(error){
+								console.error('Response parse error:', error);
+								showUploadIndicator('上传失败！', true);
+								errorCallback('Failed uploading image');
+							})
+						}).catch(function(error){
+							console.error('Upload error:', error);
+							showUploadIndicator('上传失败！', true);
+							errorCallback('Failed uploading image');
+						})
+					}
+				},
+				initialValue: '',
+				previewStyle: 'vertical'
+			});
+
+			// 初始化 WebSocket 连接
+			function initWebSocket() {
+				socket = io();
+
+				// 连接事件
+				socket.on('connect', function() {
+					console.log('WebSocket connected');
+					connectionStatus.textContent = '已连接';
+					connectionStatus.style.color = '#4CAF50';
+
+					// 加入房间
+					socket.emit('join', {
+						room: roomId,
+						username: username,
+						password: currentPassword,
+						session_id: sessionId
+					});
+
+					updateRoomInfo(true);
+				});
+
+				// 密码验证失败
+				socket.on('auth_failed', function(data) {
+					console.error('认证失败:', data.message);
+					showPasswordModal(data.message || '密码错误，请重试');
+				});
+
+				socket.on('disconnect', function() {
+					console.log('WebSocket disconnected');
+					connectionStatus.textContent = '已断开连接';
+					connectionStatus.style.color = '#f44336';
+				});
+
+				// 接收初始内容
+				socket.on('init_content', function(data) {
+					console.log('Received initial content:', data.content);
+					if (data.content && data.content.trim() !== '') {
+						isApplyingRemoteUpdate = true;
+						editorInstance.setMarkdown(data.content);
+						isApplyingRemoteUpdate = false;
+					}
+				});
+
+				// 接收内容更新
+				socket.on('content_update', function(data) {
+					console.log('Received content update from', data.username);
+					isApplyingRemoteUpdate = true;
+					editorInstance.setMarkdown(data.content);
+					isApplyingRemoteUpdate = false;
+				});
+
+				// 接收用户列表更新（用于初始化和同步）
+				socket.on('user_list_update', function(data) {
+					console.log('User list update:', data.users);
+					updateUserList(data.users);
+				});
+
+				// 用户加入
+				socket.on('user_joined', function(data) {
+					console.log('User joined:', data.username);
+					updateUserList(data.users);
+					showUploadIndicator(data.username + ' 加入了编辑', false);
+				});
+
+				// 用户离开
+				socket.on('user_left', function(data) {
+					console.log('User left:', data.username);
+					updateUserList(data.users);
+					showUploadIndicator(data.username + ' 离开了编辑', false);
+				});
+
+				// 接收光标位置更新
+				socket.on('cursor_update', function(data) {
+					console.log('Cursor update from', data.username, 'position:', data.position);
+				});
+			}
+
+			// 监听内容变化
+			editorInstance.on('change', function() {
+				if (isApplyingRemoteUpdate) return;  // 如果是远程更新，不发送
+
+				var content = editorInstance.getMarkdown();
+				if (socket && socket.connected) {
+					console.log('Sending content change');
+					socket.emit('content_change', {
+						room: roomId,
+						content: content
+					});
+				}
+			});
+
+			// 监听光标变化
+			editorInstance.on('blur', function() {
+				if (socket && socket.connected) {
+					var cursorPos = editorInstance.getSelection().index;
+					socket.emit('cursor_move', {
+						room: roomId,
+						position: cursorPos
+					});
+				}
+			});
+
+			// 额外添加 paste 事件监听器作为后备方案
+			var editorContainer = editorElement.querySelector('.toastui-editor');
+			if (editorContainer) {
+				editorContainer.addEventListener('paste', function(e) {
+					console.log('Paste event detected');
+					var items = e.clipboardData && e.clipboardData.items;
+					if (!items) return;
+
+					for (var i = 0; i < items.length; i++) {
+						if (items[i].type.indexOf('image') !== -1) {
+							var file = items[i].getAsFile();
+							if (file) {
+								console.log('Pasted image detected:', file);
+								e.preventDefault();
+								// 手动触发 addImageBlobHook
+								editorInstance.getAction('uploadImage').exec(file);
+							}
+						}
+					}
+				});
+			}
+
+			// 启动 WebSocket
+			initWebSocket();
+
+			// 加载房间文件列表
+			loadRoomFiles();
+		}
+
+		// ========== 文件共享功能 ==========
+
+		function loadRoomFiles() {
+			console.log('Loading files for room:', roomId);
+			fetch('/api/room/' + roomId + '/files')
+				.then(function(response) {
+					return response.json();
+				})
+				.then(function(data) {
+					console.log('Files loaded:', data.files);
+					displayFiles(data.files || []);
+				})
+				.catch(function(error) {
+					console.error('加载文件列表失败:', error);
+				});
+		}
+
+		function displayFiles(files) {
+			var fileList = document.getElementById('fileList');
+			if (files.length === 0) {
+				fileList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无文件</div>';
+				return;
+			}
+
+			fileList.innerHTML = '';
+			files.forEach(function(file) {
+				var fileItem = document.createElement('div');
+				fileItem.className = 'file-item';
+
+				var sizeStr = formatFileSize(file.file_size);
+				var dateStr = new Date(file.uploaded_at).toLocaleString('zh-CN');
+
+				fileItem.innerHTML =
+					'<div class="file-name">' + escapeHtml(file.original_filename) + '</div>' +
+					'<div class="file-meta">大小: ' + sizeStr + ' | 上传: ' + dateStr + '</div>' +
+					(file.description ? '<div class="file-meta">描述: ' + escapeHtml(file.description) + '</div>' : '') +
+					'<div class="file-actions">' +
+					'<button class="file-download" onclick="downloadFile(\'' + file.file_id + '\')">下载</button>' +
+					'<button class="file-delete" onclick="deleteFile(\'' + file.file_id + '\')">删除</button>' +
+					'</div>';
+
+				fileList.appendChild(fileItem);
+			});
+		}
+
+		// 启动应用
+		checkRoomPassword();
+	});
+    </script>
+</body>

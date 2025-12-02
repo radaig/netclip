@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间管理 - 密码重置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .admin-box {
+            padding: 40px;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        /* 横向房间卡片 */
+        .rooms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .room-row {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .room-row:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .room-row-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .room-row-header:hover {
+            background: #f8f9fa;
+        }
+
+        .room-id {
+            font-family: monospace;
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            flex: 0 0 200px;
+            padding: 8px 12px;
+            background: #e9ecef;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+
+        .room-type {
+            flex: 0 0 100px;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 20px;
+            text-align: center;
+        }
+
+        .room-type.public {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .room-type.private {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .room-meta {
+            flex: 1;
+            color: #666;
+            font-size: 14px;
+            margin-left: 20px;
+        }
+
+        .room-actions {
+            flex: 0 0 500px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .room-actions input[type="password"] {
+            flex: 0 0 180px;
+            padding: 6px 10px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .room-actions input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .room-actions .btn {
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+
+        .toggle-indicator {
+            flex: 0 0 30px;
+            text-align: center;
+            font-size: 18px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .room-row.expanded .toggle-indicator {
+            transform: rotate(180deg);
+        }
+
+        /* 展开详情区域 */
+        .room-details {
+            display: none;
+            background: #f8f9fa;
+            border-top: 2px solid #dee2e6;
+            padding: 20px;
+        }
+
+        .room-row.expanded .room-details {
+            display: block;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .detail-section {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .detail-section h4 {
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .clipboard-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .files-preview {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+
+        .file-meta {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .file-actions .btn {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        /* 全局文件列表样式 */
+        .global-files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .global-file-row {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .global-file-row:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .global-file-info {
+            flex: 1;
+        }
+
+        .global-file-name {
+            font-family: monospace;
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+
+        .global-file-meta {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 密码登录样式 */
+        .login-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h2 {
+            margin-bottom: 30px;
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px 30px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 密码登录页面 -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h2>管理员登录</h2>
+            <div class="form-group">
+                <label>管理员密码</label>
+                <input type="password" id="adminPassword" placeholder="请输入管理员密码" onkeypress="if(event.key==='Enter') verifyAdminPassword()">
+            </div>
+            <button class="btn btn-primary login-btn" onclick="verifyAdminPassword()">登录</button>
+            <div id="loginError" style="color: #dc3545; margin-top: 10px; display: none;">密码错误，请重试</div>
+            <div style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                密码将保存在本地，下次访问自动登录
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理后台 -->
+    <div class="container" id="adminContainer" style="display: none;">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>🔐 房间管理后台</h1>
+                    <p>管理所有协作房间的密码重置和文件管理</p>
+                </div>
+                <button class="btn btn-secondary" onclick="logout()">登出</button>
+            </div>
+        </div>
+
+        <div class="admin-box">
+            <div class="message" id="messageBox"></div>
+
+            <div class="admin-section">
+                <h2 class="section-title">统计信息</h2>
+                <div class="stats">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalRooms">-</div>
+                            <div class="stat-label">总房间数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="publicRooms">-</div>
+                            <div class="stat-label">公开房间</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="privateRooms">-</div>
+                            <div class="stat-label">私密房间</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalFiles">-</div>
+                            <div class="stat-label">总文件数</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2 class="section-title">
+                    <span>房间列表与管理</span>
+                    <div class="btn-group">
+                        <button class="btn btn-info btn-sm" onclick="expandAllRooms()">📤 一键展开</button>
+                        <button class="btn btn-secondary btn-sm" onclick="collapseAllRooms()">📥 一键收缩</button>
+                        <button class="btn btn-primary btn-sm" onclick="refreshAllData()">🔄 刷新数据</button>
+                    </div>
+                </h2>
+                <div id="roomsList" class="rooms-list">
+                    <p style="text-align: center; color: #999;">加载中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 默认管理员密码（实际使用时应该改为更复杂的密码）
+        const ADMIN_PASSWORD = 'admin123';
+
+        // 显示消息
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = 'message show ' + type;
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // 验证管理员密码
+        function verifyAdminPassword() {
+            const passwordInput = document.getElementById('adminPassword');
+            const errorDiv = document.getElementById('loginError');
+            const password = passwordInput.value;
+
+            console.log('验证密码:', password, '预期:', ADMIN_PASSWORD);
+
+            if (password === ADMIN_PASSWORD) {
+                console.log('密码正确，保存到本地存储');
+                // 密码正确，保存到本地存储（7天）
+                const expiry = new Date();
+                expiry.setDate(expiry.getDate() + 7);
+                localStorage.setItem('admin_password', password);
+                localStorage.setItem('admin_password_expiry', expiry.toISOString());
+
+                // 显示管理后台
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminContainer').style.display = 'block';
+                // 加载数据
+                fetchRooms();
+                fetchFiles();
+            } else {
+                // 密码错误
+                console.log('密码错误');
+                errorDiv.style.display = 'block';
+                passwordInput.value = '';
+            }
+        }
+
+        // 检查保存的密码
+        function checkSavedPassword() {
+            console.log('检查保存的密码...');
+            const savedPassword = localStorage.getItem('admin_password');
+            const expiryStr = localStorage.getItem('admin_password_expiry');
+
+            console.log('保存的密码:', savedPassword);
+            console.log('过期时间:', expiryStr);
+
+            if (savedPassword && expiryStr) {
+                const expiry = new Date(expiryStr);
+                const now = new Date();
+
+                console.log('当前时间:', now.toISOString());
+                console.log('过期时间:', expiry.toISOString());
+                console.log('是否过期:', now > expiry);
+
+                if (now < expiry) {
+                    console.log('密码未过期，自动登录');
+                    // 密码未过期，自动登录
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('adminContainer').style.display = 'block';
+                    fetchRooms();
+                    fetchFiles();
+                    return;
+                } else {
+                    console.log('密码已过期，清除');
+                    // 密码已过期，清除
+                    localStorage.removeItem('admin_password');
+                    localStorage.removeItem('admin_password_expiry');
+                }
+            }
+
+            console.log('显示登录页面');
+            // 显示登录页面
+            document.getElementById('loginContainer').style.display = 'flex';
+        }
+
+        // 登出功能
+        function logout() {
+            localStorage.removeItem('admin_password');
+            localStorage.removeItem('admin_password_expiry');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminContainer').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        // 获取所有房间
+        async function fetchRooms() {
+            try {
+                const response = await fetch('/api/admin/rooms');
+                const data = await response.json();
+
+                if (data.rooms) {
+                    displayRooms(data.rooms);
+                    updateStats(data.rooms);
+                }
+            } catch (error) {
+                console.error('获取房间列表失败:', error);
+                showMessage('获取房间列表失败', 'error');
+            }
+        }
+
+        // 获取所有文件
+        async function fetchFiles() {
+            console.log('获取文件列表...');
+            try {
+                const response = await fetch('/api/admin/files');
+                console.log('文件列表响应状态:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('文件列表数据:', data);
+
+                if (data.files) {
+                    console.log('文件数量:', data.files.length);
+                    displayFiles(data.files);
+                    updateFileStats(data.files);
+                } else {
+                    console.log('没有文件数据');
+                }
+                return true;
+            } catch (error) {
+                console.error('获取文件列表失败:', error);
+                // 不显示错误消息，只在控制台记录，避免干扰用户
+                return false;
+            }
+        }
+
+        // 显示房间列表
+        function displayRooms(rooms) {
+            const roomsList = document.getElementById('roomsList');
+
+            if (rooms.length === 0) {
+                roomsList.innerHTML = '<p style="text-align: center; color: #999;">暂无房间数据</p>';
+                return;
+            }
+
+            roomsList.innerHTML = rooms.map(room => `
+                <div class="room-row" data-room-id="${room.room_id}">
+                    <div class="room-row-header" onclick="toggleRoomDetails('${room.room_id}')">
+                        <div class="room-id">${room.room_id}</div>
+                        <div class="room-type ${room.is_public ? 'public' : 'private'}">
+                            ${room.is_public ? '公开' : '私密'}
+                        </div>
+                        <div class="room-meta">
+                            创建时间: ${new Date(room.created_at).toLocaleString('zh-CN')}
+                        </div>
+                        <div class="room-actions">
+                            <input type="password" id="newPass_${room.room_id}" placeholder="新密码（留空设为公开）" onclick="event.stopPropagation()" onkeypress="if(event.key==='Enter') resetPassword('${room.room_id}')">
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); resetPassword('${room.room_id}')">重置密码</button>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteRoom('${room.room_id}')">删除</button>
+                        </div>
+                        <div class="toggle-indicator">▼</div>
+                    </div>
+                    <div class="room-details" id="details_${room.room_id}">
+                        <div class="details-grid">
+                            <div class="detail-section">
+                                <h4>📋 剪贴板内容</h4>
+                                <div class="clipboard-preview" id="clipboard_${room.room_id}">
+                                    加载中...
+                                </div>
+                            </div>
+                            <div class="detail-section">
+                                <h4>📁 文件列表</h4>
+                                <div class="files-preview" id="files_${room.room_id}">
+                                    加载中...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // 自动加载所有房间的详情数据
+            rooms.forEach(room => {
+                loadRoomDetails(room.room_id);
+            });
+        }
+
+        // 更新统计信息
+        function updateStats(rooms) {
+            const totalRooms = rooms.length;
+            const publicRooms = rooms.filter(r => r.is_public).length;
+            const privateRooms = totalRooms - publicRooms;
+
+            document.getElementById('totalRooms').textContent = totalRooms;
+            document.getElementById('publicRooms').textContent = publicRooms;
+            document.getElementById('privateRooms').textContent = privateRooms;
+        }
+
+        // 更新文件统计信息
+        function updateFileStats(files) {
+            document.getElementById('totalFiles').textContent = files.length;
+        }
+
+        // 切换房间详情展开/收起
+        function toggleRoomDetails(roomId) {
+            const row = document.querySelector(`[data-room-id="${roomId}"]`);
+            const details = document.getElementById(`details_${roomId}`);
+
+            row.classList.toggle('expanded');
+
+            // 如果是展开状态，加载数据
+            if (row.classList.contains('expanded')) {
+                loadRoomDetails(roomId);
+            }
+        }
+
+        // 加载房间详情数据
+        async function loadRoomDetails(roomId) {
+            try {
+                // 加载剪贴板内容
+                const contentResponse = await fetch(`/api/room/${roomId}/content`);
+                const contentData = await contentResponse.json();
+                const clipboardDiv = document.getElementById(`clipboard_${roomId}`);
+                if (clipboardDiv) {
+                    clipboardDiv.textContent = contentData.content || '（无内容）';
+                }
+
+                // 加载文件列表
+                const filesResponse = await fetch(`/api/room/${roomId}/files`);
+                const filesData = await filesResponse.json();
+                const filesDiv = document.getElementById(`files_${roomId}`);
+                if (filesDiv) {
+                    displayRoomFiles(filesData.files || [], filesDiv);
+                }
+            } catch (error) {
+                console.error(`加载房间 ${roomId} 详情失败:`, error);
+            }
+        }
+
+        // 显示房间文件
+        function displayRoomFiles(files, container) {
+            if (files.length === 0) {
+                container.innerHTML = '<div class="empty-state">暂无文件</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => {
+                const sizeStr = formatFileSize(file.file_size);
+                const dateStr = new Date(file.uploaded_at).toLocaleString('zh-CN');
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${escapeHtml(file.original_filename)}</div>
+                            <div class="file-meta">大小: ${sizeStr} | 上传: ${dateStr} | 文件ID: ${file.file_id.substring(0, 8)}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-info btn-sm" onclick="downloadFile('${file.file_id}')">下载</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.file_id}', '${escapeHtml(file.original_filename)}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 显示文件列表（全局文件统计使用）
+        function displayFiles(files) {
+            console.log('displayFiles 被调用，文件数量:', files.length);
+            // 这个函数用于更新统计信息中的文件数量
+            // 实际的文件列表显示由 displayAllFiles 处理
+        }
+
+        // 展开所有房间
+        function expandAllRooms() {
+            const rows = document.querySelectorAll('.room-row');
+            rows.forEach(row => {
+                row.classList.add('expanded');
+            });
+        }
+
+        // 收缩所有房间
+        function collapseAllRooms() {
+            const rows = document.querySelectorAll('.room-row');
+            rows.forEach(row => {
+                row.classList.remove('expanded');
+            });
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 重置密码
+        async function resetPassword(roomId) {
+            const newPassword = document.getElementById(`newPass_${roomId}`).value;
+
+            try {
+                const response = await fetch('/api/admin/reset-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        new_password: newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`房间 ${roomId} 密码重置成功！`, 'success');
+                    document.getElementById(`newPass_${roomId}`).value = '';
+                    fetchRooms();
+                } else {
+                    showMessage(data.message || '密码重置失败', 'error');
+                }
+            } catch (error) {
+                console.error('重置密码失败:', error);
+                showMessage('重置密码失败', 'error');
+            }
+        }
+
+        // 删除房间
+        async function deleteRoom(roomId) {
+            if (!confirm(`确定要删除房间 ${roomId} 吗？此操作不可撤销！`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/delete-room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`房间 ${roomId} 已删除！`, 'success');
+                    fetchRooms();
+                    fetchFiles();
+                } else {
+                    showMessage(data.message || '删除房间失败', 'error');
+                }
+            } catch (error) {
+                console.error('删除房间失败:', error);
+                showMessage('删除房间失败', 'error');
+            }
+        }
+
+        // 下载文件
+        function downloadFile(fileId) {
+            window.open(`/api/admin/download-file/${fileId}`, '_blank');
+        }
+
+        // 删除文件
+        async function deleteFile(fileId, fileName) {
+            if (!confirm(`确定要删除文件 "${fileName}" 吗？此操作不可撤销！`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/delete-file/${fileId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`文件 "${fileName}" 已删除！`, 'success');
+                    // 不调用 fetchRooms 和 fetchFiles，避免重复刷新导致的错误提示
+                    // 让用户手动刷新页面或重新展开房间查看最新状态
+                } else {
+                    showMessage(data.error || '删除文件失败', 'error');
+                }
+            } catch (error) {
+                console.error('删除文件失败:', error);
+                showMessage('删除文件失败: ' + error.message, 'error');
+            }
+        }
+
+        // 页面加载时检查保存的密码
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，开始检查保存的密码');
+            checkSavedPassword();
+        });
+
+        // 刷新所有数据
+        async function refreshAllData() {
+            console.log('刷新所有数据...');
+            showMessage('正在刷新数据...', 'success');
+            await fetchRooms();
+            await fetchFiles();
+            showMessage('数据已刷新', 'success');
+            setTimeout(() => {
+                const messageBox = document.getElementById('messageBox');
+                if (messageBox) {
+                    messageBox.classList.remove('show');
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
