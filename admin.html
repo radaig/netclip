@@ -480,6 +480,86 @@
             padding: 12px 30px;
             font-size: 16px;
         }
+
+        /* 修改密码模态框样式 */
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .password-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 450px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .password-box h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .password-box .form-group {
+            margin-bottom: 20px;
+        }
+
+        .password-box label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .password-box input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .password-box input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .password-box .error {
+            color: #dc3545;
+            font-size: 13px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .password-box button {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -515,7 +595,10 @@
             <div class="message" id="messageBox"></div>
 
             <div class="admin-section">
-                <h2 class="section-title">统计信息</h2>
+                <h2 class="section-title">
+                    <span>统计信息</span>
+                    <button class="btn btn-primary btn-sm" onclick="showChangePasswordModal()">🔐 修改密码</button>
+                </h2>
                 <div class="stats">
                     <div class="stats-grid">
                         <div class="stat-item">
@@ -554,9 +637,47 @@
         </div>
     </div>
 
+    <!-- 修改密码模态框 -->
+    <div class="password-modal" id="changePasswordModal">
+        <div class="password-box">
+            <h3>修改管理员密码</h3>
+            <div class="form-group">
+                <label>当前密码</label>
+                <input type="password" id="currentPasswordInput" placeholder="请输入当前密码">
+            </div>
+            <div class="form-group">
+                <label>新密码</label>
+                <input type="password" id="newPasswordInput" placeholder="请输入新密码（至少6位）">
+            </div>
+            <div class="form-group">
+                <label>确认新密码</label>
+                <input type="password" id="confirmPasswordInput" placeholder="请再次输入新密码">
+            </div>
+            <div class="error" id="changePasswordError"></div>
+            <button class="btn btn-primary" onclick="changePassword()">确认修改</button>
+            <button class="btn btn-secondary" onclick="hideChangePasswordModal()" style="margin-left: 10px;">取消</button>
+        </div>
+    </div>
+
     <script>
         // 默认管理员密码（实际使用时应该改为更复杂的密码）
-        const ADMIN_PASSWORD = 'admin123';
+        let ADMIN_PASSWORD = 'admin123';
+
+        // 密码存储键名
+        const ADMIN_PASSWORD_KEY = 'admin_password_hash';
+        const ADMIN_PASSWORD_EXPIRY_KEY = 'admin_password_expiry';
+
+        // 密码哈希函数（简单实现，生产环境建议使用更安全的方法）
+        function hashPassword(password) {
+            // 使用简单的哈希，生产环境建议使用 crypto.subtle 或 bcrypt
+            let hash = 0;
+            for (let i = 0; i < password.length; i++) {
+                const char = password.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            return hash.toString();
+        }
 
         // 显示消息
         function showMessage(text, type) {
@@ -576,38 +697,58 @@
 
             console.log('验证密码:', password, '预期:', ADMIN_PASSWORD);
 
-            if (password === ADMIN_PASSWORD) {
-                console.log('密码正确，保存到本地存储');
-                // 密码正确，保存到本地存储（7天）
-                const expiry = new Date();
-                expiry.setDate(expiry.getDate() + 7);
-                localStorage.setItem('admin_password', password);
-                localStorage.setItem('admin_password_expiry', expiry.toISOString());
+            // 检查是否存储了自定义密码哈希
+            const savedPasswordHash = localStorage.getItem(ADMIN_PASSWORD_KEY);
+            if (savedPasswordHash) {
+                // 使用存储的密码哈希验证
+                if (hashPassword(password) === savedPasswordHash) {
+                    console.log('密码正确（使用存储的哈希）');
+                    // 保存登录状态（7天）
+                    const expiry = new Date();
+                    expiry.setDate(expiry.getDate() + 7);
+                    localStorage.setItem(ADMIN_PASSWORD_EXPIRY_KEY, expiry.toISOString());
 
-                // 显示管理后台
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('adminContainer').style.display = 'block';
-                // 加载数据
-                fetchRooms();
-                fetchFiles();
+                    // 显示管理后台
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('adminContainer').style.display = 'block';
+                    // 加载数据
+                    fetchRooms();
+                    fetchFiles();
+                    return;
+                }
             } else {
-                // 密码错误
-                console.log('密码错误');
-                errorDiv.style.display = 'block';
-                passwordInput.value = '';
+                // 使用默认密码验证
+                if (password === ADMIN_PASSWORD) {
+                    console.log('密码正确，使用默认密码');
+                    // 保存登录状态（7天）
+                    const expiry = new Date();
+                    expiry.setDate(expiry.getDate() + 7);
+                    localStorage.setItem(ADMIN_PASSWORD_EXPIRY_KEY, expiry.toISOString());
+
+                    // 显示管理后台
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('adminContainer').style.display = 'block';
+                    // 加载数据
+                    fetchRooms();
+                    fetchFiles();
+                    return;
+                }
             }
+
+            // 密码错误
+            console.log('密码错误');
+            errorDiv.style.display = 'block';
+            passwordInput.value = '';
         }
 
         // 检查保存的密码
         function checkSavedPassword() {
             console.log('检查保存的密码...');
-            const savedPassword = localStorage.getItem('admin_password');
-            const expiryStr = localStorage.getItem('admin_password_expiry');
+            const expiryStr = localStorage.getItem(ADMIN_PASSWORD_EXPIRY_KEY);
 
-            console.log('保存的密码:', savedPassword);
             console.log('过期时间:', expiryStr);
 
-            if (savedPassword && expiryStr) {
+            if (expiryStr) {
                 const expiry = new Date(expiryStr);
                 const now = new Date();
 
@@ -626,8 +767,7 @@
                 } else {
                     console.log('密码已过期，清除');
                     // 密码已过期，清除
-                    localStorage.removeItem('admin_password');
-                    localStorage.removeItem('admin_password_expiry');
+                    localStorage.removeItem(ADMIN_PASSWORD_EXPIRY_KEY);
                 }
             }
 
@@ -638,8 +778,7 @@
 
         // 登出功能
         function logout() {
-            localStorage.removeItem('admin_password');
-            localStorage.removeItem('admin_password_expiry');
+            localStorage.removeItem(ADMIN_PASSWORD_EXPIRY_KEY);
             document.getElementById('loginContainer').style.display = 'flex';
             document.getElementById('adminContainer').style.display = 'none';
             document.getElementById('adminPassword').value = '';
@@ -970,6 +1109,84 @@
                     messageBox.classList.remove('show');
                 }
             }, 1000);
+        }
+
+        // 显示修改密码模态框
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'flex';
+            document.getElementById('currentPasswordInput').value = '';
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+            document.getElementById('changePasswordError').style.display = 'none';
+        }
+
+        // 隐藏修改密码模态框
+        function hideChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+        }
+
+        // 修改密码
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPasswordInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+            const errorDiv = document.getElementById('changePasswordError');
+
+            // 清除错误信息
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            // 验证当前密码
+            const savedPasswordHash = localStorage.getItem(ADMIN_PASSWORD_KEY);
+            let currentPasswordValid = false;
+
+            if (savedPasswordHash) {
+                // 使用存储的密码哈希验证
+                if (hashPassword(currentPassword) === savedPasswordHash) {
+                    currentPasswordValid = true;
+                }
+            } else {
+                // 使用默认密码验证
+                if (currentPassword === ADMIN_PASSWORD) {
+                    currentPasswordValid = true;
+                }
+            }
+
+            if (!currentPasswordValid) {
+                errorDiv.textContent = '当前密码错误';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // 验证新密码
+            if (newPassword.length < 6) {
+                errorDiv.textContent = '新密码长度至少6位';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = '两次输入的新密码不一致';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // 保存新密码哈希
+            const newPasswordHash = hashPassword(newPassword);
+            localStorage.setItem(ADMIN_PASSWORD_KEY, newPasswordHash);
+
+            console.log('密码修改成功');
+
+            // 隐藏模态框
+            hideChangePasswordModal();
+
+            // 显示成功消息
+            showMessage('密码修改成功！请使用新密码重新登录', 'success');
+
+            // 重新登录
+            setTimeout(() => {
+                logout();
+            }, 1500);
         }
     </script>
 </body>

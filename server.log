@@ -1,0 +1,86 @@
+Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+ * Serving Flask app 'server'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.2.182:8080
+Press CTRL+C to quit
+ * Restarting with stat
+Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+ * Debugger is active!
+ * Debugger PIN: 478-618-313
+192.168.2.253 - - [02/Dec/2025 17:18:24] "GET /socket.io/?EIO=4&transport=polling&t=PhUMnl5 HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:24] "POST /socket.io/?EIO=4&transport=polling&t=PhUMnlZ&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:24] "GET /socket.io/?EIO=4&transport=polling&t=PhUMnla&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+Invalid transport for session 5URidqvuijEzWfu-AAAA (further occurrences of this error will be logged with level INFO)
+192.168.2.253 - - [02/Dec/2025 17:18:24] "GET /socket.io/?EIO=4&transport=websocket&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 400 -
+192.168.2.253 - - [02/Dec/2025 17:18:24] "POST /socket.io/?EIO=4&transport=polling&t=PhUMnm1.0&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:24] "GET /socket.io/?EIO=4&transport=polling&t=PhUMnm1&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:49] "GET /socket.io/?EIO=4&transport=polling&t=PhUMnoK&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:49] "POST /socket.io/?EIO=4&transport=polling&t=PhUMtsB&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:18:49] "GET /favicon.ico HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:19:14] "GET /socket.io/?EIO=4&transport=polling&t=PhUMtsB.0&sid=5URidqvuijEzWfu-AAAA HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /public HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /static/toastui-editor-all.min.js HTTP/1.0" 304 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /static/toastui-editor.min.css HTTP/1.0" 304 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /static/socket.io.min.js HTTP/1.0" 304 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /socket.io/?EIO=4&transport=polling&t=PhUPybs HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /api/room/public/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "POST /socket.io/?EIO=4&transport=polling&t=PhUPycf&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /socket.io/?EIO=4&transport=polling&t=PhUPycg&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /favicon.ico HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "POST /socket.io/?EIO=4&transport=polling&t=PhUPydj&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /socket.io/?EIO=4&transport=polling&t=PhUPydk&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /socket.io/?EIO=4&transport=websocket&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 400 -
+192.168.2.253 - - [02/Dec/2025 17:32:15] "GET /images/a8716f91-7bdf-4f45-9aa1-8fdbc9050db8_20251202110600785728.jpeg HTTP/1.0" 304 -
+192.168.2.253 - - [02/Dec/2025 17:32:18] "POST /socket.io/?EIO=4&transport=polling&t=PhUPzNi&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:18] "POST /socket.io/?EIO=4&transport=polling&t=PhUPzOH&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:19] "POST /socket.io/?EIO=4&transport=polling&t=PhUPzhq&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:21] "POST /socket.io/?EIO=4&transport=polling&t=PhUP-8T&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:25] "POST /socket.io/?EIO=4&transport=polling&t=PhUP_3p&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:25] "POST /socket.io/?EIO=4&transport=polling&t=PhUP_4P&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:28] "POST /socket.io/?EIO=4&transport=polling&t=PhUP_rS&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:29] "POST /socket.io/?EIO=4&transport=polling&t=PhUQ038&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:40] "GET /socket.io/?EIO=4&transport=polling&t=PhUPyeL&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:32:40] "POST /socket.io/?EIO=4&transport=polling&t=PhUQ2iw&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:05] "GET /socket.io/?EIO=4&transport=polling&t=PhUQ2iy&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:05] "POST /socket.io/?EIO=4&transport=polling&t=PhUQ8qL&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /admin HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/admin/rooms HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/admin/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/room/radaig/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/room/public/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /favicon.ico HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/room/radaig/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:09] "GET /api/room/public/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:30] "GET /socket.io/?EIO=4&transport=polling&t=PhUQ8qL.0&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:30] "POST /socket.io/?EIO=4&transport=polling&t=PhUQExg&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/admin/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/admin/rooms HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/room/radaig/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/room/public/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/room/radaig/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:31] "GET /api/room/public/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:55] "GET /socket.io/?EIO=4&transport=polling&t=PhUQExh&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:33:55] "POST /socket.io/?EIO=4&transport=polling&t=PhUQL2h&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:34:20] "GET /socket.io/?EIO=4&transport=polling&t=PhUQL2i&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:34:20] "POST /socket.io/?EIO=4&transport=polling&t=PhUQR9p&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:34:45] "GET /socket.io/?EIO=4&transport=polling&t=PhUQR9q&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:34:45] "POST /socket.io/?EIO=4&transport=polling&t=PhUQXGu&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:10] "GET /socket.io/?EIO=4&transport=polling&t=PhUQXGv&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:10] "POST /socket.io/?EIO=4&transport=polling&t=PhUQdO1&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:35] "GET /socket.io/?EIO=4&transport=polling&t=PhUQdO2&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:35] "POST /socket.io/?EIO=4&transport=polling&t=PhUQjV1&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:50] "GET /api/admin/rooms HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:50] "GET /api/admin/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:50] "GET /api/room/radaig/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:50] "GET /api/room/public/content HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:51] "GET /api/room/radaig/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:35:51] "GET /api/room/public/files HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:00] "GET /socket.io/?EIO=4&transport=polling&t=PhUQjV3&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:00] "POST /socket.io/?EIO=4&transport=polling&t=PhUQpc7&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:25] "GET /socket.io/?EIO=4&transport=polling&t=PhUQpc8&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:25] "POST /socket.io/?EIO=4&transport=polling&t=PhUQvjI&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:50] "GET /socket.io/?EIO=4&transport=polling&t=PhUQvjJ&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
+192.168.2.253 - - [02/Dec/2025 17:36:50] "POST /socket.io/?EIO=4&transport=polling&t=PhUQ_qL&sid=RKKFSotHuH1mYDJgAAAC HTTP/1.0" 200 -
