@@ -155,6 +155,121 @@
 		color: #FF9800;
 	}
 
+	/* 修改密码按钮样式 */
+	.btn-modify-password {
+		margin-top: 10px;
+		padding: 8px 12px;
+		background: #667eea;
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 12px;
+		width: 100%;
+		transition: background 0.3s;
+	}
+	.btn-modify-password:hover {
+		background: #5568d3;
+	}
+
+	/* 修改密码模态框样式 */
+	.password-change-modal {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		z-index: 9999;
+		justify-content: center;
+		align-items: center;
+	}
+	.password-change-box {
+		background: white;
+		padding: 30px;
+		border-radius: 12px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+		width: 90%;
+		max-width: 450px;
+		animation: fadeIn 0.3s;
+	}
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	.password-change-box h3 {
+		margin: 0 0 20px 0;
+		color: #333;
+		text-align: center;
+		font-size: 18px;
+	}
+	.password-change-box .form-group {
+		margin-bottom: 20px;
+	}
+	.password-change-box label {
+		display: block;
+		margin-bottom: 8px;
+		color: #555;
+		font-weight: 500;
+		font-size: 14px;
+	}
+	.password-change-box input[type="password"] {
+		width: 100%;
+		padding: 10px 12px;
+		font-size: 14px;
+		border: 2px solid #ddd;
+		border-radius: 6px;
+		transition: border-color 0.3s;
+		box-sizing: border-box;
+	}
+	.password-change-box input[type="password"]:focus {
+		outline: none;
+		border-color: #667eea;
+	}
+	.password-change-box .error {
+		color: #dc3545;
+		font-size: 13px;
+		margin-bottom: 10px;
+		display: none;
+	}
+	.password-change-box button {
+		padding: 10px 20px;
+		font-size: 14px;
+		margin-top: 5px;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: background 0.3s;
+	}
+	.password-change-box .btn-primary {
+		background: #667eea;
+		color: white;
+		flex: 1;
+	}
+	.password-change-box .btn-primary:hover {
+		background: #5568d3;
+	}
+	.password-change-box .btn-secondary {
+		background: #6c757d;
+		color: white;
+		flex: 1;
+	}
+	.password-change-box .btn-secondary:hover {
+		background: #5a6268;
+	}
+	.password-change-box .btn-group {
+		display: flex;
+		gap: 10px;
+		margin-top: 15px;
+	}
+
 	/* 文件共享样式 */
 	.file-section {
 		margin-top: 20px;
@@ -400,6 +515,30 @@
 			<button onclick="submitPassword()">确定</button>
 		</div>
 	</div>
+
+	<!-- 修改房间密码模态框 -->
+	<div class="password-change-modal" id="passwordChangeModal">
+		<div class="password-change-box">
+			<h3>修改房间密码</h3>
+			<div class="error" id="changePasswordError"></div>
+			<div class="form-group">
+				<label>当前密码</label>
+				<input type="password" id="currentRoomPasswordInput" placeholder="请输入当前密码">
+			</div>
+			<div class="form-group">
+				<label>新密码（留空则设为公开房间）</label>
+				<input type="password" id="newRoomPasswordInput" placeholder="请输入新密码">
+			</div>
+			<div class="form-group">
+				<label>确认新密码</label>
+				<input type="password" id="confirmRoomPasswordInput" placeholder="请再次输入新密码">
+			</div>
+			<div class="btn-group">
+				<button class="btn-primary" onclick="changeRoomPassword()">确认修改</button>
+				<button class="btn-secondary" onclick="hideChangeRoomPasswordModal()">取消</button>
+			</div>
+		</div>
+	</div>
 	<div class="container" id="mainContainer" style="display: none;">
 		<div class="editor-wrapper">
 			<div id="editor" class="editor-container"></div>
@@ -418,6 +557,7 @@
 				<div><strong>当前房间:</strong> <span class="room-id" id="roomIdDisplay">-</span></div>
 				<div class="room-type" id="roomType">公开房间</div>
 				<div class="status" id="connectionStatus">连接中...</div>
+				<button class="btn-modify-password" onclick="showChangeRoomPasswordModal()">🔐 修改房间密码</button>
 			</div>
 
 			<h3>在线用户 (<span id="userCount">0</span>)</h3>
@@ -458,6 +598,103 @@
 			var adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
 			var noun = nouns[Math.floor(Math.random() * nouns.length)];
 			return adjective + '的' + noun;
+		}
+
+		// ========== 密码修改功能（全局函数）==========
+		// 显示修改房间密码模态框
+		function showChangeRoomPasswordModal() {
+			if (!roomId) {
+				alert('请先加入房间');
+				return;
+			}
+			document.getElementById('passwordChangeModal').style.display = 'flex';
+			document.getElementById('currentRoomPasswordInput').value = '';
+			document.getElementById('newRoomPasswordInput').value = '';
+			document.getElementById('confirmRoomPasswordInput').value = '';
+			document.getElementById('changePasswordError').style.display = 'none';
+		}
+
+		// 隐藏修改房间密码模态框
+		function hideChangeRoomPasswordModal() {
+			document.getElementById('passwordChangeModal').style.display = 'none';
+		}
+
+		// 修改房间密码
+		function changeRoomPassword() {
+			var currentPasswordInput = document.getElementById('currentRoomPasswordInput').value;
+			var newPassword = document.getElementById('newRoomPasswordInput').value;
+			var confirmPassword = document.getElementById('confirmRoomPasswordInput').value;
+			var errorDiv = document.getElementById('changePasswordError');
+
+			// 清除错误信息
+			errorDiv.style.display = 'none';
+			errorDiv.textContent = '';
+
+			// 验证当前密码（公开房间当前密码为空）
+			if (document.getElementById('roomType').textContent.includes('私密')) {
+				if (!currentPasswordInput) {
+					errorDiv.textContent = '请输入当前密码';
+					errorDiv.style.display = 'block';
+					return;
+				}
+			}
+
+			// 验证新密码
+			if (newPassword && newPassword.length < 6) {
+				errorDiv.textContent = '新密码长度至少6位';
+				errorDiv.style.display = 'block';
+				return;
+			}
+
+			// 验证两次输入的新密码一致
+			if (newPassword !== confirmPassword) {
+				errorDiv.textContent = '两次输入的新密码不一致';
+				errorDiv.style.display = 'block';
+				return;
+			}
+
+			// 调用修改密码API
+			fetch('/api/room/reset-password', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					room_id: roomId,
+					old_password: currentPasswordInput,
+					new_password: newPassword
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					// 隐藏模态框
+					hideChangeRoomPasswordModal();
+
+					// 显示成功消息
+					alert('房间密码修改成功！' + (newPassword ? '新密码已生效。' : '房间已设为公开房间。'));
+
+					// 更新当前密码
+					currentPassword = newPassword;
+
+					// 更新房间类型显示
+					if (newPassword) {
+						document.getElementById('roomType').textContent = '私密房间';
+						document.getElementById('roomType').className = 'room-type private';
+					} else {
+						document.getElementById('roomType').textContent = '公开房间';
+						document.getElementById('roomType').className = 'room-type';
+					}
+				} else {
+					errorDiv.textContent = data.message || '密码修改失败';
+					errorDiv.style.display = 'block';
+				}
+			})
+			.catch(error => {
+				console.error('修改密码失败:', error);
+				errorDiv.textContent = '网络错误，请稍后重试';
+				errorDiv.style.display = 'block';
+			});
 		}
 
 		// 获取或创建会话ID
@@ -804,6 +1041,14 @@
 					return;
 				}
 
+				// 检查本地是否保存了密码
+				var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
+				if (savedPasswords[roomId]) {
+					currentPassword = savedPasswords[roomId];
+					verifyPassword(currentPassword);
+					return;
+				}
+
 				// 检查房间是否存在及类型
 				fetch('/api/room/verify', {
 					method: 'POST',
@@ -815,6 +1060,7 @@
 					})
 				})
 				.then(function(response) {
+					// 即使是401状态码，也要获取响应内容
 					return response.json();
 				})
 				.then(function(data) {
@@ -829,27 +1075,15 @@
 						// 公开房间，无需密码，直接进入
 						mainContainer.style.display = 'flex';
 						initApp();
-					} else if (data.verified && !data.is_public) {
-						// 私密房间，检查本地密码
-						var savedPasswords = JSON.parse(localStorage.getItem('collab_passwords') || '{}');
-						if (savedPasswords[roomId]) {
-							currentPassword = savedPasswords[roomId];
-							verifyPassword(currentPassword);
-						} else {
-							// 房间存在但需要密码
-							showPasswordModal('请输入房间密码');
-						}
-					} else if (!data.verified && data.exists) {
-						// 房间存在但密码错误
-						alert('密码错误！');
+					} else {
+						// 私密房间，需要密码
 						showPasswordModal('请输入房间密码');
 					}
 				})
 				.catch(function(error) {
 					console.error('检查房间失败:', error);
-					// 错误情况下跳转到public房间
-					alert('房间 "' + roomId + '" 不存在！即将跳转到公开房间...');
-					window.location.href = '/public';
+					// 错误情况下提示用户输入密码
+					showPasswordModal('请输入房间密码');
 				});
 			}
 
